@@ -1159,16 +1159,33 @@ function checkChoice(q, selectedIdx, btn){
   handleResult(q, correct, btn);
 }
 
+// Normaliza contracciones y variantes aceptadas
+function normalizeAnswer(str){
+  return str.trim().toLowerCase()
+    .replace(/didn't|did not/g,       '__DIDNT__')
+    .replace(/doesn't|does not/g,     '__DOESNT__')
+    .replace(/don't|do not/g,         '__DONT__')
+    .replace(/haven't|have not/g,     '__HAVENT__')
+    .replace(/hasn't|has not/g,       '__HASNT__')
+    .replace(/isn't|is not/g,         '__ISNT__')
+    .replace(/wasn't|was not/g,       '__WASNT__')
+    .replace(/weren't|were not/g,     '__WERENT__')
+    .replace(/won't|will not/g,       '__WONT__')
+    .replace(/can't|cannot|can not/g, '__CANT__')
+    .replace(/wouldn't|would not/g,   '__WOULDNT__')
+    .replace(/[.,!?]/g, '')   // ignorar puntuación final
+    .replace(/\s+/g, ' ');    // espacios múltiples
+}
+
 function checkFill(q, inp){
   if(G.answered) return;
-  const val = inp.value.trim().toLowerCase();
-  const ans = q.answer.toLowerCase();
+  const val = normalizeAnswer(inp.value);
+  const ans = normalizeAnswer(q.answer);
   const correct = val === ans;
   inp.disabled=true;
   inp.classList.add(correct?'correct':'wrong');
   if(!correct){
     inp.value = q.answer;
-    setTimeout(()=>{ inp.value=document.getElementById('text-answer').value; },0);
   }
   handleResult(q, correct, inp);
 }
