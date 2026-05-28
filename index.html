@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Time Travelers - English Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Exo+2:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #05080f;
+    --deep: #090d1a;
+    --panel: rgba(10,20,50,0.85);
+    --gold: #f0c040;
+    --gold2: #ffd700;
+    --cyan: #00e5ff;
+    --purple: #9b59ff;
+    --green: #00ff9d;
+    --red: #ff4757;
+    --orange: #ff8c00;
+    --white: #e8f0ff;
+    --dim: #6a7fa8;
+    --glow-gold: 0 0 20px #f0c04066, 0 0 40px #f0c04033;
+    --glow-cyan: 0 0 20px #00e5ff66, 0 0 40px #00e5ff33;
+    --glow-green: 0 0 20px #00ff9d66;
+    --glow-red: 0 0 20px #ff475766;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── STARFIELD ── */
+  #stars { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .star { position:absolute; border-radius:50%; animation: twinkle 3s infinite alternate; }
+  @keyframes twinkle { from{opacity:.2;transform:scale(1)} to{opacity:1;transform:scale(1.4)} }
+
+  /* ── CLOCK GEARS BG ── */
+  .gear {
+    position:fixed; border-radius:50%; border:3px solid;
+    animation: spin linear infinite; pointer-events:none; z-index:0; opacity:.07;
+  }
+  .gear::before {
+    content:''; position:absolute; inset:-10px; border-radius:50%;
+    border:inherit; transform: rotate(30deg);
+  }
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+  /* ── SCREENS ── */
+  .screen { display:none; position:relative; z-index:10; min-height:100vh; }
+  .screen.active { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+
+  /* ══════════════════ MENU ══════════════════ */
+  #menu {
+    background: radial-gradient(ellipse at 50% 30%, #0d1b3e 0%, #05080f 70%);
+    padding: 40px 20px;
+  }
+
+  .portal-ring {
+    width: 220px; height: 220px; border-radius: 50%;
+    border: 3px solid var(--gold);
+    box-shadow: var(--glow-gold), inset 0 0 60px #f0c04022;
+    display:flex; align-items:center; justify-content:center;
+    animation: portalPulse 3s ease-in-out infinite;
+    margin-bottom: 30px; position:relative;
+  }
+  .portal-ring::before {
+    content:''; position:absolute; inset:-15px; border-radius:50%;
+    border:1px solid #f0c04033; animation: portalPulse 3s ease-in-out infinite reverse;
+  }
+  .portal-ring::after {
+    content:''; position:absolute; inset:-30px; border-radius:50%;
+    border:1px dashed #f0c04022; animation: spin 20s linear infinite;
+  }
+  @keyframes portalPulse {
+    0%,100%{box-shadow:var(--glow-gold),inset 0 0 60px #f0c04022}
+    50%{box-shadow:0 0 40px #f0c040aa,0 0 80px #f0c04055,inset 0 0 80px #f0c04044}
+  }
+
+  .traveler-icon { font-size:80px; filter:drop-shadow(0 0 20px #f0c040aa); animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+
+  .game-title {
+    font-family:'Cinzel Decorative',serif; font-size:clamp(2rem,6vw,4rem);
+    font-weight:900; line-height:1.1; text-align:center;
+    background: linear-gradient(135deg, var(--gold2), #fff7a0, var(--gold), #e8a000);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    text-shadow: none; margin-bottom:6px;
+    filter: drop-shadow(0 0 20px #f0c040aa);
+  }
+  .game-subtitle {
+    font-family:'Orbitron',monospace; font-size:clamp(.7rem,2vw,1rem);
+    color:var(--cyan); letter-spacing:4px; text-transform:uppercase;
+    margin-bottom:40px; opacity:.8;
+  }
+
+  .menu-btn {
+    display:block; width:100%; max-width:380px;
+    padding:16px 28px; margin:10px auto;
+    border-radius:12px; border:2px solid;
+    font-family:'Orbitron',monospace; font-size:.9rem; font-weight:700;
+    cursor:pointer; transition:all .3s; text-align:center;
+    position:relative; overflow:hidden; letter-spacing:2px;
+  }
+  .menu-btn::before {
+    content:''; position:absolute; inset:0; opacity:0;
+    transition:opacity .3s;
+  }
+  .menu-btn:hover::before { opacity:1; }
+  .menu-btn:hover { transform:translateY(-3px) scale(1.02); }
+
+  .btn-easy {
+    border-color:var(--green); color:var(--green);
+    background:rgba(0,255,157,.05);
+  }
+  .btn-easy::before { background:rgba(0,255,157,.1); }
+  .btn-easy:hover { box-shadow:var(--glow-green); }
+
+  .btn-medium {
+    border-color:var(--gold); color:var(--gold);
+    background:rgba(240,192,64,.05);
+  }
+  .btn-medium::before { background:rgba(240,192,64,.1); }
+  .btn-medium:hover { box-shadow:var(--glow-gold); }
+
+  .btn-hard {
+    border-color:var(--orange); color:var(--orange);
+    background:rgba(255,140,0,.05);
+  }
+  .btn-hard:hover { box-shadow:0 0 20px #ff8c0066; }
+
+  .btn-expert {
+    border-color:var(--purple); color:var(--purple);
+    background:rgba(155,89,255,.05);
+    animation: expertGlow 2s ease-in-out infinite;
+  }
+  @keyframes expertGlow {
+    0%,100%{box-shadow:none} 50%{box-shadow:0 0 30px #9b59ff66}
+  }
+
+  .level-badge {
+    display:inline-block; font-size:.65rem; padding:2px 8px; border-radius:20px;
+    margin-left:8px; vertical-align:middle; font-family:'Exo 2',sans-serif;
+    font-weight:600; letter-spacing:1px;
+  }
+  .badge-easy { background:#00ff9d22; color:var(--green); border:1px solid var(--green); }
+  .badge-medium { background:#f0c04022; color:var(--gold); border:1px solid var(--gold); }
+  .badge-hard { background:#ff8c0022; color:var(--orange); border:1px solid var(--orange); }
+  .badge-expert { background:#9b59ff22; color:var(--purple); border:1px solid var(--purple); }
+
+  .menu-desc {
+    font-size:.75rem; color:var(--dim); display:block;
+    font-family:'Exo 2',sans-serif; font-weight:300; margin-top:4px; letter-spacing:1px;
+  }
+
+  /* ══════════════════ GAME SCREEN ══════════════════ */
+  #game {
+    padding: 20px;
+    background: radial-gradient(ellipse at 50% 0%, #0d1b3e 0%, #05080f 60%);
+    align-items: stretch;
+    min-height: 100vh;
+  }
+
+  .game-header {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 20px; background:var(--panel);
+    border-radius:16px; border:1px solid #ffffff11;
+    backdrop-filter:blur(10px); margin-bottom:20px;
+    flex-wrap:wrap; gap:12px;
+  }
+
+  .level-info {
+    font-family:'Orbitron',monospace; font-size:.8rem;
+    color:var(--dim); letter-spacing:2px;
+  }
+  .level-info span { color:var(--gold); font-size:1rem; }
+
+  .lives-bar { display:flex; gap:6px; align-items:center; }
+  .heart {
+    font-size:1.3rem; transition:all .3s;
+    filter:drop-shadow(0 0 6px #ff4757);
+  }
+  .heart.lost { opacity:.2; filter:none; transform:scale(.8); }
+
+  .timer-wrap {
+    display:flex; align-items:center; gap:8px;
+    font-family:'Orbitron',monospace; font-size:1.1rem; font-weight:700;
+  }
+  .timer-icon { font-size:1.2rem; }
+  #timer-display { color:var(--cyan); min-width:40px; text-align:center; }
+  #timer-display.urgent { color:var(--red); animation: timerPulse .5s ease-in-out infinite; }
+  @keyframes timerPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .score-display {
+    font-family:'Orbitron',monospace; font-size:.9rem;
+  }
+  .score-display span { color:var(--gold2); font-size:1.1rem; }
+
+  /* Progress bar */
+  .progress-wrap {
+    background:#ffffff0d; border-radius:8px; height:8px;
+    margin-bottom:20px; overflow:hidden; border:1px solid #ffffff11;
+  }
+  #progress-bar {
+    height:100%; border-radius:8px;
+    background:linear-gradient(90deg,var(--cyan),var(--purple));
+    transition:width .5s ease; box-shadow:var(--glow-cyan);
+  }
+
+  /* Question card */
+  .question-card {
+    background:var(--panel);
+    border:1px solid #ffffff18; border-radius:20px;
+    padding:30px 28px; margin-bottom:20px;
+    backdrop-filter:blur(10px);
+    animation: slideIn .4s ease;
+  }
+  @keyframes slideIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+  .q-type-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:.7rem; letter-spacing:2px; text-transform:uppercase;
+    padding:4px 12px; border-radius:20px; margin-bottom:14px;
+    font-family:'Orbitron',monospace;
+  }
+
+  .q-number {
+    font-family:'Orbitron',monospace; font-size:.75rem;
+    color:var(--dim); margin-bottom:12px;
+  }
+
+  .question-text {
+    font-size:clamp(1rem,3vw,1.3rem); line-height:1.6;
+    color:var(--white); font-weight:400;
+  }
+  .question-text .highlight {
+    color:var(--gold); font-weight:700;
+    border-bottom:2px dashed var(--gold); padding-bottom:1px;
+  }
+  .question-text .blank {
+    display:inline-block; min-width:100px; height:28px;
+    border-bottom:2px solid var(--cyan); background:rgba(0,229,255,.05);
+    border-radius:4px; vertical-align:middle; margin:0 4px;
+    padding:0 8px; font-style:italic; color:var(--cyan);
+  }
+
+  /* Options */
+  .options-grid {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:12px; margin-top:20px;
+  }
+  @media(max-width:500px){ .options-grid{grid-template-columns:1fr} }
+
+  .option-btn {
+    padding:14px 18px; border-radius:12px;
+    border:2px solid #ffffff18;
+    background:rgba(255,255,255,.03);
+    color:var(--white); font-size:.95rem;
+    font-family:'Exo 2',sans-serif; font-weight:600;
+    cursor:pointer; transition:all .25s; text-align:left;
+    line-height:1.4;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color:var(--cyan); background:rgba(0,229,255,.08);
+    transform:translateY(-2px); box-shadow:var(--glow-cyan);
+  }
+  .option-btn.correct {
+    border-color:var(--green)!important; background:rgba(0,255,157,.15)!important;
+    box-shadow:var(--glow-green)!important; color:var(--green)!important;
+  }
+  .option-btn.wrong {
+    border-color:var(--red)!important; background:rgba(255,71,87,.15)!important;
+    box-shadow:var(--glow-red)!important; color:var(--red)!important;
+  }
+  .option-btn:disabled { cursor:default; }
+
+  /* Text input questions */
+  .input-answer-wrap { margin-top:20px; }
+  .answer-input {
+    width:100%; padding:14px 18px; border-radius:12px;
+    border:2px solid #ffffff18; background:rgba(255,255,255,.04);
+    color:var(--white); font-size:1rem; font-family:'Exo 2',sans-serif;
+    outline:none; transition:all .3s;
+  }
+  .answer-input:focus { border-color:var(--cyan); box-shadow:var(--glow-cyan); }
+  .answer-input.correct { border-color:var(--green); box-shadow:var(--glow-green); }
+  .answer-input.wrong { border-color:var(--red); box-shadow:var(--glow-red); }
+  .submit-btn {
+    margin-top:12px; padding:13px 28px; border-radius:12px;
+    border:2px solid var(--cyan); background:rgba(0,229,255,.1);
+    color:var(--cyan); font-family:'Orbitron',monospace; font-size:.85rem;
+    font-weight:700; cursor:pointer; transition:all .3s; letter-spacing:2px;
+  }
+  .submit-btn:hover { background:rgba(0,229,255,.2); box-shadow:var(--glow-cyan); }
+
+  /* Feedback */
+  .feedback-box {
+    padding:14px 18px; border-radius:12px; margin-top:14px;
+    font-size:.9rem; line-height:1.5; display:none;
+    animation:slideIn .3s ease;
+  }
+  .feedback-box.show { display:block; }
+  .feedback-box.correct-fb {
+    background:rgba(0,255,157,.1); border:1px solid var(--green); color:var(--green);
+  }
+  .feedback-box.wrong-fb {
+    background:rgba(255,71,87,.1); border:1px solid var(--red); color:var(--red);
+  }
+
+  /* Second chance */
+  .second-chance-box {
+    background:rgba(240,192,64,.06); border:1px solid var(--gold);
+    border-radius:12px; padding:14px 18px; margin-top:14px;
+    display:none; animation:slideIn .3s ease;
+  }
+  .second-chance-box.show { display:block; }
+  .sc-title { color:var(--gold); font-family:'Orbitron',monospace; font-size:.8rem; margin-bottom:8px; }
+
+  /* Next button */
+  .next-btn {
+    width:100%; padding:15px; border-radius:12px; margin-top:16px;
+    border:2px solid var(--gold); background:rgba(240,192,64,.1);
+    color:var(--gold); font-family:'Orbitron',monospace; font-size:.9rem;
+    font-weight:700; cursor:pointer; transition:all .3s; letter-spacing:2px;
+    display:none; align-items:center; justify-content:center; gap:8px;
+  }
+  .next-btn.show { display:flex; animation:slideIn .3s ease; }
+  .next-btn:hover { background:rgba(240,192,64,.2); box-shadow:var(--glow-gold); transform:translateY(-2px); }
+
+  /* ══════════════════ RESULT SCREEN ══════════════════ */
+  #result {
+    padding:40px 20px;
+    background: radial-gradient(ellipse at 50% 30%, #0d1b3e 0%, #05080f 70%);
+  }
+
+  .result-card {
+    background:var(--panel); border-radius:24px;
+    border:1px solid #ffffff18; padding:40px 32px;
+    max-width:500px; width:100%; text-align:center;
+    backdrop-filter:blur(10px); animation:slideIn .5s ease;
+  }
+
+  .result-icon { font-size:80px; margin-bottom:20px; animation:float 3s ease-in-out infinite; }
+  .result-title {
+    font-family:'Cinzel Decorative',serif; font-size:2rem;
+    margin-bottom:8px;
+  }
+  .result-title.win {
+    background:linear-gradient(135deg,var(--gold2),var(--gold));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .result-title.lose { color:var(--red); }
+
+  .result-stats {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:16px; margin:24px 0;
+  }
+  .stat-box {
+    background:rgba(255,255,255,.04); border-radius:12px;
+    border:1px solid #ffffff11; padding:16px;
+  }
+  .stat-label { font-size:.7rem; color:var(--dim); letter-spacing:2px; margin-bottom:6px; font-family:'Orbitron',monospace; }
+  .stat-value { font-size:1.5rem; font-family:'Orbitron',monospace; font-weight:700; color:var(--gold); }
+
+  .stars-row { font-size:2rem; margin:10px 0; letter-spacing:6px; }
+
+  .result-btn {
+    display:block; padding:14px 28px; border-radius:12px;
+    border:2px solid; font-family:'Orbitron',monospace; font-size:.85rem;
+    font-weight:700; cursor:pointer; transition:all .3s; letter-spacing:2px;
+    margin:10px auto; max-width:320px; width:100%; text-align:center;
+  }
+  .result-btn.gold { border-color:var(--gold); color:var(--gold); background:rgba(240,192,64,.1); }
+  .result-btn.gold:hover { background:rgba(240,192,64,.2); box-shadow:var(--glow-gold); }
+  .result-btn.cyan { border-color:var(--cyan); color:var(--cyan); background:rgba(0,229,255,.1); }
+  .result-btn.cyan:hover { background:rgba(0,229,255,.2); box-shadow:var(--glow-cyan); }
+
+  /* ══════════════════ LOADING / TRANSITION ══════════════════ */
+  .level-transition {
+    position:fixed; inset:0; z-index:100;
+    background:var(--bg); display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    animation:fadeOut 1s ease 1.5s forwards;
+  }
+  @keyframes fadeOut { to{opacity:0;pointer-events:none} }
+  .transition-text {
+    font-family:'Cinzel Decorative',serif; font-size:2rem;
+    color:var(--gold); animation:zoomIn 1s ease;
+  }
+  @keyframes zoomIn { from{opacity:0;transform:scale(.5)} to{opacity:1;transform:scale(1)} }
+
+  /* Floating +/- score */
+  .floating-score {
+    position:fixed; font-family:'Orbitron',monospace; font-size:1.5rem;
+    font-weight:700; pointer-events:none; z-index:200;
+    animation: floatUp 1.2s ease forwards;
+  }
+  @keyframes floatUp { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-80px)} }
+
+  /* SCROLLABLE in game */
+  #game .scroll-wrap { width:100%; max-width:680px; margin:0 auto; overflow-y:auto; }
+
+  /* Timer bar */
+  .timer-bar-wrap { background:#ffffff0d; border-radius:4px; height:4px; margin-bottom:16px; }
+  #timer-bar { height:100%; border-radius:4px; background:var(--cyan); transition:width .1s linear; }
+
+  /* Shake animation */
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-8px)}
+    40%{transform:translateX(8px)}
+    60%{transform:translateX(-5px)}
+    80%{transform:translateX(5px)}
+  }
+  .shake { animation:shake .4s ease; }
+
+  /* ══ ABANDON MODAL ══ */
+  #abandon-modal {
+    display:none; position:fixed; inset:0; z-index:300;
+    background:rgba(0,0,0,.75); backdrop-filter:blur(6px);
+    align-items:center; justify-content:center;
+  }
+  #abandon-modal.open { display:flex; }
+  .modal-box {
+    background:#0d1b3e; border:1px solid var(--red);
+    border-radius:20px; padding:32px 28px; max-width:360px; width:90%;
+    text-align:center; animation:slideIn .3s ease;
+    box-shadow:0 0 40px #ff475733;
+  }
+  .modal-icon { font-size:3rem; margin-bottom:12px; }
+  .modal-title { font-family:'Orbitron',monospace; font-size:1rem; color:var(--red); margin-bottom:8px; letter-spacing:2px; }
+  .modal-msg { color:var(--dim); font-size:.88rem; margin-bottom:24px; line-height:1.5; }
+  .modal-btns { display:flex; gap:12px; justify-content:center; }
+  .modal-btn {
+    flex:1; padding:12px; border-radius:12px; font-family:'Orbitron',monospace;
+    font-size:.8rem; font-weight:700; cursor:pointer; transition:all .3s; letter-spacing:1px;
+  }
+  .modal-btn-cancel { border:2px solid #ffffff22; background:transparent; color:var(--dim); }
+  .modal-btn-cancel:hover { border-color:var(--white); color:var(--white); }
+  .modal-btn-confirm { border:2px solid var(--red); background:rgba(255,71,87,.15); color:var(--red); }
+  .modal-btn-confirm:hover { background:rgba(255,71,87,.3); box-shadow:var(--glow-red); }
+
+  /* ══ RESPONSIVE ══ */
+  @media(max-width:600px){
+    .game-header { padding:10px 14px; }
+    .question-card { padding:20px 16px; }
+    .result-card { padding:28px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- STARS -->
+<div id="stars"></div>
+
+<!-- GEARS -->
+<div class="gear" style="width:300px;height:300px;border-color:#f0c040;top:-80px;right:-80px;animation-duration:40s;"></div>
+<div class="gear" style="width:200px;height:200px;border-color:#00e5ff;bottom:-60px;left:-60px;animation-duration:25s;animation-direction:reverse;"></div>
+<div class="gear" style="width:150px;height:150px;border-color:#9b59ff;top:40%;left:5%;animation-duration:35s;"></div>
+
+<!-- ══════════ MENU ══════════ -->
+<div id="menu" class="screen active">
+  <div class="portal-ring">
+    <div class="traveler-icon">⏱️</div>
+  </div>
+  <div class="game-title">Time Travelers</div>
+  <div class="game-subtitle">◆ English Quest ◆</div>
+
+  <button class="menu-btn btn-easy" onclick="startLevel(1)">
+    ⚡ NIVEL 1 — EASY <span class="level-badge badge-easy">FÁCIL</span>
+    <span class="menu-desc">Pasado Simple · Pasado Negativo · Interrogativo</span>
+  </button>
+
+  <button class="menu-btn btn-medium" onclick="startLevel(2)">
+    🔥 NIVEL 2 — MEDIUM <span class="level-badge badge-medium">MEDIO</span>
+    <span class="menu-desc">Comparativos · Superlativos</span>
+  </button>
+
+  <button class="menu-btn btn-hard" onclick="startLevel(3)">
+    💀 NIVEL 3 — HARD <span class="level-badge badge-hard">DIFÍCIL</span>
+    <span class="menu-desc">Presente Perfecto</span>
+  </button>
+
+  <button class="menu-btn btn-expert" onclick="startLevel(4)">
+    ✨ NIVEL 4 — EXPERT <span class="level-badge badge-expert">EXPERTO</span>
+    <span class="menu-desc">Todos los temas · 3 vidas · Sin tiempo</span>
+  </button>
+</div>
+
+<!-- ══════════ GAME ══════════ -->
+<div id="game" class="screen">
+  <div class="scroll-wrap">
+    <!-- Header -->
+    <div class="game-header">
+      <div class="level-info">NIVEL <span id="hdr-level">1</span></div>
+      <div class="lives-bar" id="lives-bar"></div>
+      <div class="timer-wrap" id="timer-wrap">
+        <span class="timer-icon">⏳</span>
+        <div id="timer-display">30</div>
+      </div>
+      <div class="score-display">⭐ <span id="score-display">0</span></div>
+    </div>
+
+    <!-- Timer bar -->
+    <div class="timer-bar-wrap" id="timer-bar-wrap">
+      <div id="timer-bar" style="width:100%"></div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div id="progress-bar" style="width:0%"></div>
+    </div>
+
+    <!-- Question card -->
+    <div class="question-card" id="question-card">
+      <div id="q-type-badge" class="q-type-badge"></div>
+      <div class="q-number" id="q-number"></div>
+      <div class="question-text" id="question-text"></div>
+      <div id="options-area"></div>
+      <div class="feedback-box" id="feedback-box"></div>
+      <div class="second-chance-box" id="second-chance-box">
+        <div class="sc-title">🎯 SEGUNDA OPORTUNIDAD</div>
+        <div id="sc-content"></div>
+      </div>
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()">
+        SIGUIENTE PREGUNTA ▶
+      </button>
+    </div>
+
+    <!-- Subtle abandon button -->
+    <div style="text-align:center;margin-top:14px;padding-bottom:20px;">
+      <button id="abandon-btn" onclick="confirmAbandon()" style="background:none;border:1px solid #ffffff18;color:var(--dim);font-size:.75rem;font-family:'Orbitron',monospace;cursor:pointer;letter-spacing:1px;padding:7px 18px;border-radius:20px;transition:all .3s;" onmouseover="this.style.color='var(--red)';this.style.borderColor='var(--red)'" onmouseout="this.style.color='var(--dim)';this.style.borderColor='#ffffff18'">
+        ✕ ABANDONAR NIVEL
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ABANDON MODAL ══════════ -->
+<div id="abandon-modal">
+  <div class="modal-box">
+    <div class="modal-icon">🚪</div>
+    <div class="modal-title">¿ABANDONAR NIVEL?</div>
+    <div class="modal-msg">Perderás todo el progreso de este nivel. ¿Estás seguro?</div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeAbandonModal()">SEGUIR</button>
+      <button class="modal-btn modal-btn-confirm" onclick="doAbandon()">SALIR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ RESULT ══════════ -->
+<div id="result" class="screen">
+  <div class="result-card">
+    <div id="result-icon" class="result-icon"></div>
+    <div id="result-title" class="result-title"></div>
+    <div id="result-msg" style="color:var(--dim);margin-bottom:8px;font-size:.9rem;"></div>
+    <div class="stars-row" id="result-stars"></div>
+    <div class="result-stats">
+      <div class="stat-box">
+        <div class="stat-label">PUNTAJE</div>
+        <div class="stat-value" id="res-score">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">CORRECTAS</div>
+        <div class="stat-value" id="res-correct">0/0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">NIVEL</div>
+        <div class="stat-value" id="res-level">1</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">VIDAS REST.</div>
+        <div class="stat-value" id="res-lives">0</div>
+      </div>
+    </div>
+    <button class="result-btn gold" id="res-retry" onclick="">🔄 REINTENTAR</button>
+    <button class="result-btn cyan" onclick="goMenu()">🏠 MENÚ PRINCIPAL</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  STARS GENERATOR
+// ══════════════════════════════════════════════════════
+(function(){
+  const s=document.getElementById('stars');
+  for(let i=0;i<120;i++){
+    const d=document.createElement('div');
+    d.className='star';
+    const sz=Math.random()*2.5+.5;
+    d.style.cssText=`
+      width:${sz}px;height:${sz}px;
+      top:${Math.random()*100}%;left:${Math.random()*100}%;
+      background:${['#fff','#00e5ff','#f0c040','#9b59ff'][Math.floor(Math.random()*4)]};
+      animation-delay:${Math.random()*3}s;
+      animation-duration:${2+Math.random()*3}s;
+    `;
+    s.appendChild(d);
+  }
+})();
+
+// ══════════════════════════════════════════════════════
+//  QUESTIONS DATABASE
+// ══════════════════════════════════════════════════════
+const DB = {
+
+  // ─── LEVEL 1: 15 preguntas → se eligen 12 al azar ───
+  1: [
+    {
+      type:'choice', badge:'🕰️ PASADO SIMPLE', badgeColor:'#00ff9d',
+      question:'Elige la forma correcta del pasado simple:<br><b>"She ___ to the store yesterday."</b>',
+      options:['go','goes','went','goed'],
+      answer:0, answerIdx:2,
+      explanation:'El pasado simple de "go" es "went" (irregular).'
+    },
+    {
+      type:'choice', badge:'🕰️ PASADO SIMPLE', badgeColor:'#00ff9d',
+      question:'Traduce al inglés:<br><b>"Yo comí una pizza."</b>',
+      options:['I eat a pizza.','I ate a pizza.','I eated a pizza.','I was eat a pizza.'],
+      answer:0, answerIdx:1,
+      explanation:'"Ate" es el pasado de "eat". La estructura es: Sujeto + V2.'
+    },
+    {
+      type:'fill', badge:'✏️ COMPLETA LA FRASE', badgeColor:'#00e5ff',
+      question:'Escribe el verbo en pasado:<br><b>"They ___ (play) football last Saturday."</b>',
+      answer:'played',
+      explanation:'"Play" es regular. Se agrega -ed → played.'
+    },
+    {
+      type:'choice', badge:'🚫 PASADO NEGATIVO', badgeColor:'#ff4757',
+      question:'Selecciona la forma negativa correcta:<br><b>"He ___ watch TV last night."</b>',
+      options:["didn't",'not did',"wasn't","don't"],
+      answer:0, answerIdx:0,
+      explanation:'Para el pasado negativo usamos "didn\'t" + verbo base.'
+    },
+    {
+      type:'fix', badge:'🔧 CORRIGE EL ERROR', badgeColor:'#ff8c00',
+      question:'Esta oración tiene un error. ¿Cuál es la forma correcta?<br><b>"She didn\'t went to school."</b>',
+      options:["She didn't go to school.","She went not to school.","She not go to school.","She didn't gone to school."],
+      answer:0, answerIdx:0,
+      explanation:'Después de "didn\'t" siempre va el verbo en forma base.'
+    },
+    {
+      type:'choice', badge:'❓ PASADO INTERROGATIVO', badgeColor:'#9b59ff',
+      question:'Forma la pregunta correcta:<br><b>"___ you see that movie?"</b>',
+      options:['Do','Did','Were','Have'],
+      answer:0, answerIdx:1,
+      explanation:'Las preguntas en pasado simple usan "Did" + sujeto + V-base.'
+    },
+    {
+      type:'translate', badge:'🌐 TRADUCCIÓN', badgeColor:'#f0c040',
+      question:'Traduce al inglés:<br><b>"¿Trabajaron ellos ayer?"</b>',
+      answer:'Did they work yesterday?',
+      hint:'Did + they + work + yesterday?',
+      explanation:'Interrogativo pasado: Did + sujeto + verbo base + ?'
+    },
+    {
+      type:'choice', badge:'❓ PASADO INTERROGATIVO', badgeColor:'#9b59ff',
+      question:'¿Cuál es la respuesta correcta a: "Did she call you?"',
+      options:['Yes, she did.','Yes, she does.','Yes, she called.','Yes, she calls.'],
+      answer:0, answerIdx:0,
+      explanation:'Las respuestas cortas al pasado interrogativo usan "did/didn\'t".'
+    },
+    {
+      type:'fill', badge:'✏️ COMPLETA LA FRASE', badgeColor:'#00e5ff',
+      question:'Completa con la forma negativa:<br><b>"We ___ (not/understand) the lesson."</b>',
+      answer:"didn't understand",
+      explanation:'"didn\'t understand" — pasado negativo de understand.'
+    },
+    {
+      type:'fix', badge:'🔧 CORRIGE EL ERROR', badgeColor:'#ff8c00',
+      question:'Corrige el error:<br><b>"Did they went to the party?"</b>',
+      options:['Did they go to the party?','Did they gone to the party?','Were they go to the party?','Have they go to the party?'],
+      answer:0, answerIdx:0,
+      explanation:'Con "Did", el verbo va en forma base: "go", no "went".'
+    },
+    {
+      type:'choice', badge:'🕰️ PASADO SIMPLE', badgeColor:'#00ff9d',
+      question:'¿Cuál es el pasado de "buy"?',
+      options:['buyed','buys','bought','was buy'],
+      answer:0, answerIdx:2,
+      explanation:'"Buy" es irregular: buy → bought.'
+    },
+    {
+      type:'translate', badge:'🌐 TRADUCCIÓN', badgeColor:'#f0c040',
+      question:'Traduce:<br><b>"Nosotros no fuimos al cine anoche."</b>',
+      answer:"We didn't go to the cinema last night.",
+      hint:"We didn't go...",
+      explanation:'Pasado negativo: Subject + didn\'t + V-base.'
+    },
+    {
+      type:'fill', badge:'✏️ COMPLETA LA FRASE', badgeColor:'#00e5ff',
+      question:'Completa con el pasado simple:<br><b>"She ___ (write) a letter to her friend."</b>',
+      answer:'wrote',
+      explanation:'"Write" es irregular: write → wrote.'
+    },
+    {
+      type:'choice', badge:'🚫 PASADO NEGATIVO', badgeColor:'#ff4757',
+      question:'Elige la oración negativa correcta:<br><b>"They ___ understand the question."</b>',
+      options:["didn't","not","weren't","don't"],
+      answer:0, answerIdx:0,
+      explanation:'"didn\'t" es el auxiliar negativo del pasado para todos los sujetos.'
+    },
+    {
+      type:'fix', badge:'🔧 CORRIGE EL ERROR', badgeColor:'#ff8c00',
+      question:'Corrige:<br><b>"Where did she went after school?"</b>',
+      options:['Where did she go after school?','Where did she goes after school?','Where she went after school?','Where did she going after school?'],
+      answer:0, answerIdx:0,
+      explanation:'En preguntas con Did, el verbo va en base: "go", no "went".'
+    },
+  ],
+
+  // ─── LEVEL 2: 13 preguntas → se eligen 10 al azar ───
+  2: [
+    {
+      type:'choice', badge:'📊 COMPARATIVO', badgeColor:'#00ff9d',
+      question:'Completa con el comparativo:<br><b>"A car is ___ than a bicycle."</b>',
+      options:['fast','faster','fastest','more fast'],
+      answer:0, answerIdx:1,
+      explanation:'Adjetivos cortos forman el comparativo con -er: fast → faster.'
+    },
+    {
+      type:'choice', badge:'🏆 SUPERLATIVO', badgeColor:'#f0c040',
+      question:'Elige el superlativo correcto:<br><b>"Mount Everest is ___ mountain in the world."</b>',
+      options:['the higher','the highest','the most high','higher'],
+      answer:0, answerIdx:1,
+      explanation:'Adjetivos cortos: the + adj + -est → the highest.'
+    },
+    {
+      type:'fix', badge:'🔧 CORRIGE EL ERROR', badgeColor:'#ff8c00',
+      question:'Corrige el error:<br><b>"She is more tall than her sister."</b>',
+      options:['She is taller than her sister.','She is tallest than her sister.','She is the tallest than her sister.','She is more taller than her sister.'],
+      answer:0, answerIdx:0,
+      explanation:'"Tall" es adjetivo corto: usa -er, NO "more" → taller.'
+    },
+    {
+      type:'fill', badge:'✏️ COMPLETA LA FRASE', badgeColor:'#00e5ff',
+      question:'Escribe la forma correcta:<br><b>"This is ___ (beautiful) dress in the store."</b>',
+      answer:'the most beautiful',
+      explanation:'Adjetivos largos usan: the most + adjective para el superlativo.'
+    },
+    {
+      type:'translate', badge:'🌐 TRADUCCIÓN', badgeColor:'#f0c040',
+      question:'Traduce:<br><b>"Este libro es más interesante que el otro."</b>',
+      answer:'This book is more interesting than the other one.',
+      hint:'This book is more interesting than...',
+      explanation:'Adjetivos largos (3+ sílabas): more + adjective + than.'
+    },
+    {
+      type:'choice', badge:'📊 COMPARATIVO', badgeColor:'#00ff9d',
+      question:'Forma irregular — "good" → comparativo:',
+      options:['gooder','more good','better','best'],
+      answer:0, answerIdx:2,
+      explanation:'"good" → "better" (comparativo) / "best" (superlativo). Son irregulares.'
+    },
+    {
+      type:'choice', badge:'🏆 SUPERLATIVO', badgeColor:'#f0c040',
+      question:'Completa:<br><b>"January is ___ month of the year in Bolivia."</b>',
+      options:['the most hot','the hottest','the more hot','the hotest'],
+      answer:0, answerIdx:1,
+      explanation:'Consonante-vocal-consonante duplica la última letra: hot → hottest.'
+    },
+    {
+      type:'fix', badge:'🔧 CORRIGE EL ERROR', badgeColor:'#ff8c00',
+      question:'Corrige:<br><b>"He is the most old person in the village."</b>',
+      options:['He is the oldest person in the village.','He is the older person in the village.','He is older person in the village.','He is most oldest in the village.'],
+      answer:0, answerIdx:0,
+      explanation:'"Old" es adjetivo corto: the oldest, NO "the most old".'
+    },
+    {
+      type:'choice', badge:'📊 COMPARATIVO', badgeColor:'#00ff9d',
+      question:'Comparativo de igualdad:<br><b>"She is ___ tall ___ her brother."</b>',
+      options:['as / as','more / than','as / than','the / as'],
+      answer:0, answerIdx:0,
+      explanation:'Comparativo de igualdad: as + adjective + as.'
+    },
+    {
+      type:'translate', badge:'🌐 TRADUCCIÓN', badgeColor:'#f0c040',
+      question:'Traduce:<br><b>"Él es el mejor estudiante de la clase."</b>',
+      answer:'He is the best student in the class.',
+      hint:'He is the best...',
+      explanation:'"best" es el superlativo irregular de "good".'
+    },
+    {
+      type:'fill', badge:'✏️ COMPLETA LA FRASE', badgeColor:'#00e5ff',
+      question:'Completa con el comparativo:<br><b>"My house is ___ (big) than yours."</b>',
+      answer:'bigger',
+      explanation:'Big termina en CVC: duplica la "g" y agrega -er → bigger.'
+    },
+    {
+      type:'choice', badge:'🏆 SUPERLATIVO', badgeColor:'#f0c040',
+      question:'Elige el superlativo de "bad":',
+      options:['baddest','most bad','worse','the worst'],
+      answer:0, answerIdx:3,
+      explanation:'"bad" es irregular: bad → worse (comp.) → the worst (superl.).'
+    },
+    {
+      type:'translate', badge:'🌐 TRADUCCIÓN', badgeColor:'#f0c040',
+      question:'Traduce:<br><b>"El río Amazonas es más largo que el río Nilo."</b>',
+      answer:'The Amazon River is longer than the Nile River.',
+      hint:'The Amazon River is longer than...',
+      explanation:'Long → longer (comparativo con -er para adjetivos cortos).'
+    },
+  ],
+
+  // ─── LEVEL 3: 10 preguntas → se eligen 7 al azar ───
+  3: [
+    {
+      type:'choice', badge:'✅ PRESENTE PERFECTO', badgeColor:'#9b59ff',
+      question:'Elige la opción correcta:<br><b>"She ___ never ___ sushi."</b>',
+      options:['has / eaten','have / ate','has / ate','have / eaten'],
+      answer:0, answerIdx:0,
+      explanation:'Present Perfect: have/has + past participle. "eat" → "eaten".'
+    },
+    {
+      type:'fill', badge:'✏️ COMPLETA LA FRASE', badgeColor:'#00e5ff',
+      question:'Completa:<br><b>"They ___ (already/finish) their homework."</b>',
+      answer:'have already finished',
+      explanation:'Present Perfect: have + already + past participle.'
+    },
+    {
+      type:'choice', badge:'✅ PRESENTE PERFECTO', badgeColor:'#9b59ff',
+      question:'"Since" vs "for":<br><b>"I have lived here ___ 2010."</b>',
+      options:['for','since','ago','during'],
+      answer:0, answerIdx:1,
+      explanation:'"Since" = punto específico en el tiempo. "For" = duración.'
+    },
+    {
+      type:'fix', badge:'🔧 CORRIGE EL ERROR', badgeColor:'#ff8c00',
+      question:'Corrige:<br><b>"He has went to Paris three times."</b>',
+      options:['He has been to Paris three times.','He have been to Paris three times.','He has go to Paris three times.','He has went to Paris three times.'],
+      answer:0, answerIdx:0,
+      explanation:'"go" en PP de experiencia → "has been to". "Went" es pasado simple.'
+    },
+    {
+      type:'translate', badge:'🌐 TRADUCCIÓN', badgeColor:'#f0c040',
+      question:'Traduce:<br><b>"¿Has terminado tu proyecto?"</b>',
+      answer:'Have you finished your project?',
+      hint:'Have you finished...?',
+      explanation:'Interrogativo PP: Have/Has + sujeto + participio pasado?'
+    },
+    {
+      type:'choice', badge:'✅ PRESENTE PERFECTO', badgeColor:'#9b59ff',
+      question:'Con "just":<br><b>"The train ___ just ___."</b>',
+      options:['has / arrived','have / arrive','has / arrive','had / arrived'],
+      answer:0, answerIdx:0,
+      explanation:'"Just" en PP indica algo recién ocurrido: has + just + participle.'
+    },
+    {
+      type:'choice', badge:'✅ PRESENTE PERFECTO', badgeColor:'#9b59ff',
+      question:'Elige "yet" o "already":<br><b>"I haven\'t eaten lunch ___."</b>',
+      options:['already','yet','just','since'],
+      answer:0, answerIdx:1,
+      explanation:'"Yet" va en negaciones e interrogaciones. "Already" en afirmaciones.'
+    },
+    {
+      type:'fill', badge:'✏️ COMPLETA LA FRASE', badgeColor:'#00e5ff',
+      question:'Forma negativa:<br><b>"We ___ (not/see) that movie yet."</b>',
+      answer:"haven't seen",
+      explanation:'"haven\'t seen" — Present Perfect negativo de "see".'
+    },
+    {
+      type:'fix', badge:'🔧 CORRIGE EL ERROR', badgeColor:'#ff8c00',
+      question:'Corrige:<br><b>"I have study English for two years."</b>',
+      options:['I have studied English for two years.','I has studied English for two years.','I have studying English for two years.','I have study English since two years.'],
+      answer:0, answerIdx:0,
+      explanation:'"study" → participio: "studied". Have + studied.'
+    },
+    {
+      type:'translate', badge:'🌐 TRADUCCIÓN', badgeColor:'#f0c040',
+      question:'Traduce:<br><b>"Ella ha vivido en Santa Cruz por 5 años."</b>',
+      answer:'She has lived in Santa Cruz for 5 years.',
+      hint:'She has lived in...',
+      explanation:'She → has + lived + for (duración).'
+    },
+  ],
+
+  // Level 4 se construye abajo
+  4: []
+};
+
+// ══════════════════════════════════════════════════════
+//  LEVEL CONFIG  —  maxQ = preguntas que se juegan
+// ══════════════════════════════════════════════════════
+const LEVEL_CFG = {
+  1: { name:'NIVEL 1', lives:5, time:30,   secondChance:true,  color:'#00ff9d', emoji:'⚡', maxQ:12 },
+  2: { name:'NIVEL 2', lives:4, time:25,   secondChance:true,  color:'#f0c040', emoji:'🔥', maxQ:10 },
+  3: { name:'NIVEL 3', lives:3, time:20,   secondChance:false, color:'#ff8c00', emoji:'💀', maxQ:7  },
+  4: { name:'EXPERTO', lives:3, time:null, secondChance:false, color:'#9b59ff', emoji:'✨', maxQ:5  },
+};
+
+// Level 4: pool grande mezclado, se eligen 5 al azar en resetState
+DB[4] = [
+  ...DB[1].map(q=>({...q,_lvl:1})),
+  ...DB[2].map(q=>({...q,_lvl:2})),
+  ...DB[3].map(q=>({...q,_lvl:3})),
+];
+
+// ══════════════════════════════════════════════════════
+//  GAME STATE
+// ══════════════════════════════════════════════════════
+let G = {};
+
+function resetState(lvl){
+  const cfg = LEVEL_CFG[lvl];
+  // Shuffle pool and take only maxQ questions
+  const pool = shuffle([...DB[lvl]]).slice(0, cfg.maxQ);
+  G = {
+    level: lvl,
+    questions: pool,
+    idx: 0,
+    lives: cfg.lives,
+    score: 0,
+    correct: 0,
+    total: pool.length,
+    answered: false,
+    secondChanceUsed: false,
+    timerVal: cfg.time,
+    timerInt: null,
+    questionStartTime: null,
+  };
+}
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+// ══════════════════════════════════════════════════════
+//  SCREENS
+// ══════════════════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function confirmAbandon(){
+  clearInterval(G.timerInt);
+  document.getElementById('abandon-modal').classList.add('open');
+}
+function closeAbandonModal(){
+  document.getElementById('abandon-modal').classList.remove('open');
+  // Restart timer if game not answered
+  if(!G.answered) startTimer();
+}
+function doAbandon(){
+  document.getElementById('abandon-modal').classList.remove('open');
+  clearInterval(G.timerInt);
+  goMenu();
+}
+
+function goMenu(){
+  clearInterval(G.timerInt);
+  showScreen('menu');
+}
+
+// ══════════════════════════════════════════════════════
+//  START LEVEL
+// ══════════════════════════════════════════════════════
+function startLevel(lvl){
+  resetState(lvl);
+  showScreen('game');
+  document.getElementById('hdr-level').textContent = LEVEL_CFG[lvl].name;
+
+  // Timer visibility
+  const tw = document.getElementById('timer-wrap');
+  const tbw = document.getElementById('timer-bar-wrap');
+  if(LEVEL_CFG[lvl].time === null){
+    tw.style.display='none';
+    tbw.style.display='none';
+  } else {
+    tw.style.display='flex';
+    tbw.style.display='block';
+  }
+
+  document.getElementById('res-retry').onclick = ()=>startLevel(lvl);
+  renderQuestion();
+}
+
+// ══════════════════════════════════════════════════════
+//  LIVES
+// ══════════════════════════════════════════════════════
+function renderLives(){
+  const bar = document.getElementById('lives-bar');
+  bar.innerHTML = '';
+  for(let i=0;i<LEVEL_CFG[G.level].lives;i++){
+    const h=document.createElement('span');
+    h.className='heart'+(i>=G.lives?' lost':'');
+    h.textContent='❤️';
+    bar.appendChild(h);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  TIMER
+// ══════════════════════════════════════════════════════
+function startTimer(){
+  clearInterval(G.timerInt);
+  const cfg = LEVEL_CFG[G.level];
+  if(!cfg.time) return;
+
+  G.timerVal = cfg.time;
+  const disp = document.getElementById('timer-display');
+  const bar = document.getElementById('timer-bar');
+  disp.className='';
+  bar.style.background='var(--cyan)';
+
+  G.timerInt = setInterval(()=>{
+    G.timerVal--;
+    const pct = (G.timerVal/cfg.time)*100;
+    bar.style.width=pct+'%';
+    disp.textContent = G.timerVal;
+
+    if(G.timerVal <= 8){
+      disp.className='urgent';
+      bar.style.background='var(--red)';
+    }
+
+    if(G.timerVal <= 0){
+      clearInterval(G.timerInt);
+      if(!G.answered) timeOut();
+    }
+  },1000);
+}
+
+function timeOut(){
+  G.answered = true;
+  loseLife();
+  const fb=document.getElementById('feedback-box');
+  const q=G.questions[G.idx];
+  fb.className='feedback-box show wrong-fb';
+  fb.innerHTML=`⏱️ ¡Tiempo agotado! <br><b>Respuesta: ${getCorrectText(q)}</b><br><small>${q.explanation}</small>`;
+  document.getElementById('next-btn').classList.add('show');
+  disableOptions();
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER QUESTION
+// ══════════════════════════════════════════════════════
+function renderQuestion(){
+  if(G.idx >= G.questions.length){ endLevel(true); return; }
+
+  const q = G.questions[G.idx];
+  G.answered = false;
+  G.secondChanceUsed = false;
+
+  // Progress
+  const pct = (G.idx/G.total)*100;
+  document.getElementById('progress-bar').style.width=pct+'%';
+  document.getElementById('score-display').textContent=G.score;
+  renderLives();
+
+  // Badge
+  const badge=document.getElementById('q-type-badge');
+  badge.textContent=q.badge;
+  badge.style.background=q.badgeColor+'22';
+  badge.style.color=q.badgeColor;
+  badge.style.border=`1px solid ${q.badgeColor}44`;
+
+  document.getElementById('q-number').textContent=`Pregunta ${G.idx+1} de ${G.total}`;
+  document.getElementById('question-text').innerHTML=q.question;
+  document.getElementById('feedback-box').className='feedback-box';
+  document.getElementById('feedback-box').innerHTML='';
+  document.getElementById('second-chance-box').className='second-chance-box';
+  document.getElementById('second-chance-box').innerHTML='<div class="sc-title">🎯 SEGUNDA OPORTUNIDAD</div><div id="sc-content"></div>';
+  document.getElementById('next-btn').classList.remove('show');
+
+  renderOptions(q);
+  startTimer();
+  G.questionStartTime = Date.now();
+
+  // Animate card
+  const card=document.getElementById('question-card');
+  card.style.animation='none';
+  void card.offsetWidth;
+  card.style.animation='slideIn .4s ease';
+}
+
+function renderOptions(q){
+  const area=document.getElementById('options-area');
+  area.innerHTML='';
+
+  if(q.type==='choice'||q.type==='fix'){
+    const grid=document.createElement('div');
+    grid.className='options-grid';
+    // Shuffle options randomly
+    const opts=q.options.map((text,i)=>({text,i}));
+    shuffle(opts);
+    q._shuffled=opts.map(o=>o.i);
+    opts.forEach(({text,i})=>{
+      const btn=document.createElement('button');
+      btn.className='option-btn';
+      btn.innerHTML=`<span style="color:var(--dim);margin-right:6px;">${['A','B','C','D'][opts.indexOf({text,i})]||'•'}</span>${text}`;
+      const letter=['A','B','C','D'][opts.findIndex(o=>o.i===i)||0];
+      btn.dataset.idx=i;
+      btn.onclick=()=>checkChoice(q,i,btn);
+      grid.appendChild(btn);
+    });
+    // Fix letter
+    grid.querySelectorAll('.option-btn').forEach((btn,pos)=>{
+      btn.querySelector('span').textContent=['A','B','C','D'][pos]+' ';
+    });
+    area.appendChild(grid);
+
+  } else if(q.type==='fill'||q.type==='translate'){
+    const wrap=document.createElement('div');
+    wrap.className='input-answer-wrap';
+    const inp=document.createElement('input');
+    inp.type='text'; inp.className='answer-input';
+    inp.placeholder=q.type==='translate'?'Escribe la traducción...':(q.hint||'Escribe tu respuesta...');
+    inp.id='text-answer';
+    inp.onkeydown=e=>{ if(e.key==='Enter'&&!G.answered) checkFill(q,inp); };
+    wrap.appendChild(inp);
+    const sub=document.createElement('button');
+    sub.className='submit-btn'; sub.textContent='✓ CONFIRMAR';
+    sub.onclick=()=>{ if(!G.answered) checkFill(q,inp); };
+    wrap.appendChild(sub);
+    if(q.hint && q.type==='fill'){
+      const hint=document.createElement('div');
+      hint.style.cssText='color:var(--dim);font-size:.8rem;margin-top:8px;';
+      hint.textContent='💡 Pista: '+q.hint;
+      wrap.appendChild(hint);
+    }
+    area.appendChild(wrap);
+    setTimeout(()=>inp.focus(),200);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  CHECK ANSWERS
+// ══════════════════════════════════════════════════════
+function checkChoice(q, selectedIdx, btn){
+  if(G.answered) return;
+
+  const correct = selectedIdx === q.answerIdx;
+
+  if(correct){
+    // Mark correct immediately and disable all
+    const allBtns=document.querySelectorAll('.option-btn');
+    allBtns.forEach(b=>{
+      b.disabled=true;
+      if(parseInt(b.dataset.idx)===q.answerIdx) b.classList.add('correct');
+    });
+  } else {
+    // Only mark the wrong button, don't disable others yet
+    btn.classList.add('wrong');
+    btn.disabled=true;
+  }
+
+  handleResult(q, correct, btn);
+}
+
+function checkFill(q, inp){
+  if(G.answered) return;
+  const val = inp.value.trim().toLowerCase();
+  const ans = q.answer.toLowerCase();
+  const correct = val === ans;
+  inp.disabled=true;
+  inp.classList.add(correct?'correct':'wrong');
+  if(!correct){
+    inp.value = q.answer;
+    setTimeout(()=>{ inp.value=document.getElementById('text-answer').value; },0);
+  }
+  handleResult(q, correct, inp);
+}
+
+function handleResult(q, correct, el){
+  clearInterval(G.timerInt);
+  const timeSpent = Math.floor((Date.now()-G.questionStartTime)/1000);
+
+  if(correct){
+    G.answered=true;
+    G.correct++;
+    const bonus = LEVEL_CFG[G.level].time ? Math.max(0,10-timeSpent) : 0;
+    const pts = 100 + bonus;
+    G.score += pts;
+    document.getElementById('score-display').textContent=G.score;
+
+    // Floating score
+    showFloating('+'+pts, '#00ff9d', el);
+
+    const fb=document.getElementById('feedback-box');
+    fb.className='feedback-box show correct-fb';
+    fb.innerHTML=`✅ ¡Correcto! ${bonus>0?`<b>+${bonus} puntos bonus por velocidad</b><br>`:''}${q.explanation}`;
+    document.getElementById('next-btn').classList.add('show');
+
+  } else {
+    // Second chance logic
+    const cfg=LEVEL_CFG[G.level];
+    if(cfg.secondChance && !G.secondChanceUsed && q.type==='choice'){
+      G.secondChanceUsed=true;
+      showSecondChance(q);
+    } else {
+      G.answered=true;
+      loseLife(el);
+      const fb=document.getElementById('feedback-box');
+      fb.className='feedback-box show wrong-fb';
+      fb.innerHTML=`❌ Incorrecto.<br><b>Respuesta correcta: ${getCorrectText(q)}</b><br><small>${q.explanation}</small>`;
+      showFloating('-1 ❤️','#ff4757',el);
+      document.getElementById('next-btn').classList.add('show');
+    }
+  }
+}
+
+function showSecondChance(q){
+  const scb=document.getElementById('second-chance-box');
+  scb.className='second-chance-box show';
+  const scc=document.getElementById('sc-content');
+  scc.innerHTML='<p style="color:var(--gold);font-weight:600;margin-bottom:6px;font-size:.9rem;">🎯 ¡Segunda oportunidad! Eliminamos una opción incorrecta.</p><p style="color:var(--dim);font-size:.8rem;">Si fallas de nuevo, pierdes una vida y pasas a la siguiente.</p>';
+
+  // Find all buttons that are NOT wrong and NOT the correct answer → candidates to eliminate
+  const allBtns=document.querySelectorAll('.option-btn');
+  const toEliminate=[];
+  allBtns.forEach(b=>{
+    const idx=parseInt(b.dataset.idx);
+    if(!b.classList.contains('wrong') && idx!==q.answerIdx){
+      toEliminate.push(b);
+    }
+  });
+
+  // Disable one random distractor
+  if(toEliminate.length>0){
+    const victim=toEliminate[Math.floor(Math.random()*toEliminate.length)];
+    victim.disabled=true;
+    victim.style.opacity='.25';
+    victim.style.textDecoration='line-through';
+  }
+
+  // Make sure remaining enabled buttons fire checkChoice again
+  allBtns.forEach(b=>{
+    if(!b.disabled){
+      const idx=parseInt(b.dataset.idx);
+      b.onclick=()=>checkChoiceSecond(q,idx,b);
+    }
+  });
+}
+
+// Second attempt handler — no more second chances
+function checkChoiceSecond(q, selectedIdx, btn){
+  if(G.answered) return;
+  const correct = selectedIdx === q.answerIdx;
+
+  // Now disable and mark everything
+  const allBtns=document.querySelectorAll('.option-btn');
+  allBtns.forEach(b=>{
+    b.disabled=true;
+    if(parseInt(b.dataset.idx)===q.answerIdx) b.classList.add('correct');
+  });
+  if(!correct) btn.classList.add('wrong');
+
+  clearInterval(G.timerInt);
+  G.answered=true;
+
+  if(correct){
+    G.correct++;
+    const pts=50; // half points for second chance
+    G.score+=pts;
+    document.getElementById('score-display').textContent=G.score;
+    showFloating('+'+pts,'#f0c040',btn);
+    const fb=document.getElementById('feedback-box');
+    fb.className='feedback-box show correct-fb';
+    fb.innerHTML=`✅ ¡Correcto en el segundo intento! <b>+${pts} puntos</b><br><small>${q.explanation}</small>`;
+  } else {
+    loseLife(btn);
+    showFloating('-1 ❤️','#ff4757',btn);
+    const fb=document.getElementById('feedback-box');
+    fb.className='feedback-box show wrong-fb';
+    fb.innerHTML=`❌ Incorrecto.<br><b>Respuesta correcta: ${getCorrectText(q)}</b><br><small>${q.explanation}</small>`;
+  }
+
+  document.getElementById('second-chance-box').className='second-chance-box'; // hide it
+  document.getElementById('next-btn').classList.add('show');
+}
+
+function disableOptions(){
+  document.querySelectorAll('.option-btn').forEach(b=>b.disabled=true);
+  const inp=document.getElementById('text-answer');
+  if(inp) inp.disabled=true;
+}
+
+function getCorrectText(q){
+  if(q.type==='choice'||q.type==='fix') return q.options[q.answerIdx];
+  return q.answer;
+}
+
+function loseLife(el){
+  G.lives--;
+  renderLives();
+  // Shake card
+  const card=document.getElementById('question-card');
+  card.classList.add('shake');
+  setTimeout(()=>card.classList.remove('shake'),500);
+
+  if(G.lives<=0){
+    setTimeout(()=>endLevel(false),1200);
+  }
+}
+
+function showFloating(text, color, ref){
+  const d=document.createElement('div');
+  d.className='floating-score';
+  d.textContent=text; d.style.color=color;
+  const rect=document.querySelector('.question-card').getBoundingClientRect();
+  d.style.left=(rect.left+rect.width/2)+'px';
+  d.style.top=(rect.top+100)+'px';
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),1300);
+}
+
+// ══════════════════════════════════════════════════════
+//  NEXT QUESTION
+// ══════════════════════════════════════════════════════
+function nextQuestion(){
+  if(G.lives<=0){ endLevel(false); return; }
+  G.idx++;
+  if(G.idx>=G.total) endLevel(true);
+  else renderQuestion();
+}
+
+// ══════════════════════════════════════════════════════
+//  END LEVEL
+// ══════════════════════════════════════════════════════
+function endLevel(won){
+  clearInterval(G.timerInt);
+  showScreen('result');
+
+  const pct=G.correct/G.total;
+  let stars='';
+  if(pct>=.9)stars='⭐⭐⭐';
+  else if(pct>=.6)stars='⭐⭐';
+  else if(pct>=.3)stars='⭐';
+
+  document.getElementById('result-icon').textContent = won?(pct>=.8?'🏆':'🎉'):'💔';
+  const titleEl=document.getElementById('result-title');
+  titleEl.textContent = won?(pct>=.8?'¡Excelente!':'¡Completado!'):'¡Sin vidas!';
+  titleEl.className='result-title '+(won?'win':'lose');
+  document.getElementById('result-msg').textContent = won
+    ? (pct>=.8?'¡Eres un viajero del tiempo maestro!':'¡Buen trabajo! Sigue practicando.')
+    : '¡No te rindas! Cada error es una lección.';
+  document.getElementById('result-stars').textContent=stars;
+  document.getElementById('res-score').textContent=G.score;
+  document.getElementById('res-correct').textContent=`${G.correct}/${G.total}`;
+  document.getElementById('res-level').textContent=LEVEL_CFG[G.level].name;
+  document.getElementById('res-lives').textContent=G.lives;
+}
+</script>
+</body>
+</html>
